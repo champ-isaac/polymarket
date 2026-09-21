@@ -14,6 +14,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"sort"
 )
 
@@ -47,7 +48,7 @@ type opportunity struct {
 func main() {
 	limit := flag.Int("limit", 200, "number of events to fetch")
 	minEdge := flag.Float64("min-edge", 0.02, "minimum gross edge (e.g. 0.02 = 2 cents on the dollar) to report")
-	outCSV := flag.String("csv", "", "optional path to write results as CSV")
+	outCSV := flag.String("csv", "output/results.csv", "path to write results as CSV (empty to skip)")
 	flag.Parse()
 
 	events, err := fetchEvents(*limit)
@@ -142,6 +143,11 @@ func printTable(opps []opportunity) {
 }
 
 func writeCSV(path string, opps []opportunity) error {
+	if dir := filepath.Dir(path); dir != "." {
+		if err := os.MkdirAll(dir, 0o755); err != nil {
+			return err
+		}
+	}
 	f, err := os.Create(path)
 	if err != nil {
 		return err
